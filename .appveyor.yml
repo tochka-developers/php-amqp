@@ -4,6 +4,7 @@ version: '{branch}.{build}'
 clone_folder: c:\projects\amqp
 
 install:
+  - cinst rabbitmq
   - ps: appveyor\install.ps1
 
 cache:
@@ -75,6 +76,9 @@ environment:
 
 build_script:
   - ps: appveyor\build.ps1
+
+test_script:
+  - nmake test
 
 after_build:
   - ps: appveyor\package.ps1
