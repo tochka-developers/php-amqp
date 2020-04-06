@@ -78,6 +78,7 @@ build_script:
   - ps: appveyor\build.ps1
 
 test_script:
+  - cd c:\projects\amqp
   - nmake test
 
 after_build:
