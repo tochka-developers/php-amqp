@@ -23,6 +23,10 @@ fi
 
 git checkout ${LIBRABBITMQ_VERSION}
 
+if [ "${LIBRABBITMQ_VERSION}" == "master" ]; then
+    export VERSION=99.99.99
+fi
+
 mkdir build && cd build
 cmake ..
 cmake --build . --target install
