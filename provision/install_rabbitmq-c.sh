@@ -13,7 +13,7 @@ echo "Installing rabbitmq-c ..."
 
 if [ ! -d "$HOME/rabbitmq-c" ]; then
   cd $HOME
-  git clone git://github.com/alanxz/rabbitmq-c.git
+  git clone https://github.com/alanxz/rabbitmq-c.git
   cd $HOME/rabbitmq-c
 else
   echo 'Using cached directory.';
