@@ -429,8 +429,10 @@ amqp_connection_resource *connection_resource_constructor(amqp_connection_params
 	/* Create the connection */
 	resource->connection_state = amqp_new_connection();
 
+	int use_ssl = params->cacert || params->capath || params->use_default_cacert || params->use_default_capath;
+
 	/* Create socket object */
-	if (params->cacert) {
+	if (use_ssl) {
 		resource->socket = amqp_ssl_socket_new(resource->connection_state);
 
 		if (!resource->socket) {
@@ -452,9 +454,21 @@ amqp_connection_resource *connection_resource_constructor(amqp_connection_params
 		zend_throw_exception(amqp_connection_exception_class_entry, "Socket error: could not set CA certificate.", 0 TSRMLS_CC);
 
 		return NULL;
-	}
+	} else if (params->capath && amqp_ssl_socket_set_capath(resource->socket, params->capath)) {
+        zend_throw_exception(amqp_connection_exception_class_entry, "Socket error: could not set CA path.", 0 TSRMLS_CC);
 
-	if (params->cacert) {
+        return NULL;
+    } else if (params->use_default_cacert && amqp_ssl_socket_set_default_cacert(resource->socket)) {
+        zend_throw_exception(amqp_connection_exception_class_entry, "Socket error: could not set default CA certificate.", 0 TSRMLS_CC);
+
+        return NULL;
+    } else if (params->use_default_capath && amqp_ssl_socket_set_default_capath(resource->socket)) {
+         zend_throw_exception(amqp_connection_exception_class_entry, "Socket error: could not set default CA path.", 0 TSRMLS_CC);
+
+         return NULL;
+    }
+
+	if (use_ssl) {
 #if AMQP_VERSION_MAJOR * 100 + AMQP_VERSION_MINOR * 10 + AMQP_VERSION_PATCH >= 80
 		amqp_ssl_socket_set_verify_peer(resource->socket, params->verify);
 		amqp_ssl_socket_set_verify_hostname(resource->socket, params->verify);

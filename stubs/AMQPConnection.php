@@ -46,6 +46,9 @@ class AMQPConnection
      *
      *      TLS support (see https://www.rabbitmq.com/ssl.html for details):
      *      'cacert' => Path to the CA cert file in PEM format..
+     *      'capath' => Path to the CA directory
+     *      'use_default_cacert' => True for use default cacert
+     *      'use_default_capath' => True for use default capath
      *      'cert'   => Path to the client certificate in PEM foramt.
      *      'key'    => Path to the client key in PEM format.
      *      'verify' => Enable or disable peer verification. If peer verification is enabled then the common name in the
@@ -408,6 +411,60 @@ class AMQPConnection
      * @param string $cacert
      */
     public function setCACert($cacert)
+    {
+    }
+
+    /**
+     * Get path to the CA path
+     *
+     * @return string
+     */
+    public function getCAPath()
+    {
+    }
+
+    /**
+     * Set path to the CA path
+     *
+     * @param string $cacert
+     */
+    public function setCAPath($capath)
+    {
+    }
+
+    /**
+     * Get usage of default cacert
+     *
+     * @return bool
+     */
+    public function getUseDefaultCACert()
+    {
+    }
+
+    /**
+     * Enable or disable usage of default cacert
+     *
+     * @param bool $use_default_cacert
+     */
+    public function setUseDefaultCACert($use_default_cacert)
+    {
+    }
+
+    /**
+     * Get usage of default capath
+     *
+     * @return bool
+     */
+    public function getUseDefaultCAPath()
+    {
+    }
+
+    /**
+     * Enable or disable usage of default capath
+     *
+     * @param bool $use_default_capath
+     */
+    public function setUseDefaultCAPath($use_default_capath)
     {
     }
 

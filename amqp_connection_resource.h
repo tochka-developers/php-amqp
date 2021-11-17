@@ -51,6 +51,9 @@ typedef struct _amqp_connection_params {
   double connect_timeout;
   double rpc_timeout;
   char *cacert;
+  char *capath;
+  int use_default_cacert;
+  int use_default_capath;
   char *cert;
   char *key;
   int verify;
