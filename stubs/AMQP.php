@@ -133,3 +133,9 @@ define('AMQP_SASL_METHOD_PLAIN', 0);
  *
  */
 define('AMQP_SASL_METHOD_EXTERNAL', 1);
+
+
+/**
+ * Constant for notify about custom amqp-library version
+ */
+define('AMQP_TOCHKA_EXTENSION', 1);

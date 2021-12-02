@@ -498,7 +498,7 @@ static PHP_METHOD(amqp_queue_class, get)
 /* }}} */
 
 
-/* {{{ proto array AMQPQueue::consume([callback, flags = <bitmask>, consumer_tag]);
+/* {{{ proto array AMQPQueue::consume([callback, flags = <bitmask>, consumer_tag, bool no_block = 0]);
 consume the message
 */
 static PHP_METHOD(amqp_queue_class, consume)
@@ -516,15 +516,19 @@ static PHP_METHOD(amqp_queue_class, consume)
 	zend_fcall_info fci = empty_fcall_info;
 	zend_fcall_info_cache fci_cache = empty_fcall_info_cache;
 
+    zend_bool no_block = 0;
+
 	amqp_table_t *arguments;
 
-	char *consumer_tag = NULL;  PHP5to7_param_str_len_type_t consumer_tag_len = 0;
+	char *consumer_tag = NULL;
+    PHP5to7_param_str_len_type_t consumer_tag_len = 0;
 	PHP5to7_param_long_type_t flags = INI_INT("amqp.auto_ack") ? AMQP_AUTOACK : AMQP_NOPARAM;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|f!ls",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|f!lsb",
 							  &fci, &fci_cache,
 							  &flags,
-							  &consumer_tag, &consumer_tag_len) == FAILURE) {
+							  &consumer_tag, &consumer_tag_len,
+                              &no_block) == FAILURE) {
 		return;
 	}
 
@@ -611,7 +615,7 @@ static PHP_METHOD(amqp_queue_class, consume)
 
 	double read_timeout = PHP_AMQP_READ_OBJ_PROP_DOUBLE(amqp_connection_class_entry, PHP_AMQP_READ_THIS_PROP("connection"), "read_timeout");
 
-	if (read_timeout > 0) {
+    if (read_timeout > 0) {
 		tv.tv_sec  = (long int) read_timeout;
 		tv.tv_usec = (long int) ((read_timeout - tv.tv_sec) * 1000000);
 	} else {
@@ -629,6 +633,11 @@ static PHP_METHOD(amqp_queue_class, consume)
 		amqp_rpc_reply_t res = amqp_consume_message(channel_resource->connection_resource->connection_state, &envelope, tv_ptr, 0);
 
 		if (AMQP_RESPONSE_LIBRARY_EXCEPTION == res.reply_type && AMQP_STATUS_TIMEOUT == res.library_error) {
+            if (no_block) {
+                amqp_destroy_envelope(&envelope);
+                break;
+            }
+
 			zend_throw_exception(amqp_queue_exception_class_entry, "Consumer timeout exceed", 0 TSRMLS_CC);
 
 			amqp_destroy_envelope(&envelope);

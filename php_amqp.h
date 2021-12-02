@@ -68,6 +68,8 @@ extern zend_module_entry amqp_module_entry;
 #include "TSRM.h"
 #endif
 
+#define AMQP_TOCHKA_EXTENSION 1
+
 #define AMQP_NOPARAM		0
 /* Where is 1?*/
 #define AMQP_JUST_CONSUME	1
