@@ -272,7 +272,7 @@ class AMQPConnection
     }
 
     /**
-     * Sets the interval of time to wait for income activity from AMQP broker
+     * Sets the interval of time (in seconds) to wait for income activity from AMQP broker
      *
      * @param float $timeout
      *
@@ -285,7 +285,7 @@ class AMQPConnection
     }
 
     /**
-     * Get the configured interval of time to wait for income activity
+     * Get the configured interval of time (in seconds) to wait for income activity
      * from AMQP broker
      *
      * @return float
@@ -295,7 +295,7 @@ class AMQPConnection
     }
 
     /**
-     * Sets the interval of time to wait for outcome activity to AMQP broker
+     * Sets the interval of time (in seconds) to wait for outcome activity to AMQP broker
      *
      * @param float $timeout
      *
@@ -308,7 +308,7 @@ class AMQPConnection
     }
 
     /**
-     * Get the configured interval of time to wait for outcome activity
+     * Get the configured interval of time (in seconds) to wait for outcome activity
      * to AMQP broker
      *
      * @return float
@@ -318,7 +318,7 @@ class AMQPConnection
     }
 
     /**
-     * Sets the interval of time to wait for RPC activity to AMQP broker
+     * Sets the interval of time to wait (in seconds) for RPC activity to AMQP broker
      *
      * @param float $timeout
      *
@@ -331,7 +331,7 @@ class AMQPConnection
     }
 
     /**
-     * Get the configured interval of time to wait for RPC activity
+     * Get the configured interval of time (in seconds) to wait for RPC activity
      * to AMQP broker
      *
      * @return float
