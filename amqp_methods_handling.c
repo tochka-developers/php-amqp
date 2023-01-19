@@ -42,7 +42,7 @@ static int amqp_simple_wait_method_list(amqp_connection_state_t state,
 										amqp_method_number_t *expected_methods,
 										amqp_method_t *output) {
 	amqp_frame_t frame;
-	int res = amqp_simple_wait_frame(state, &frame);
+	int res = amqp_simple_wait_frame_on_channel(state, expected_channel, &frame);
 
 	if (AMQP_STATUS_OK != res) {
 		return res;
@@ -65,7 +65,7 @@ int amqp_simple_wait_method_list_noblock(amqp_connection_state_t state,
 										 amqp_method_t *output,
 										 struct timeval *timeout) {
 	amqp_frame_t frame;
-	int res = amqp_simple_wait_frame_noblock(state, &frame, timeout);
+	int res = amqp_simple_wait_frame_on_channel_noblock(state, expected_channel, &frame, timeout);
 
 	if (AMQP_STATUS_OK != res) {
 		return res;
