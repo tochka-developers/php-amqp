@@ -771,6 +771,31 @@ static PHP_METHOD(amqp_connection_class, preconnect)
 }
 /* }}} */
 
+/* {{{ proto amqp::sendHeartbeat()
+Manual send heartbeat if it necessary */
+static PHP_METHOD(amqp_connection_class, sendHeartbeat)
+{
+    PHP5to7_READ_PROP_RV_PARAM_DECL;
+    amqp_connection_object *connection;
+
+    PHP_AMQP_NOPARAMS();
+
+    /* Get the connection object out of the store */
+    connection = PHP_AMQP_GET_CONNECTION(getThis());
+
+    if (connection->connection_resource && connection->connection_resource->is_connected) {
+        if (AMQP_STATUS_OK != amqp_send_heartbeat(connection->connection_resource->connection_state)) {
+            zend_throw_exception(amqp_connection_exception_class_entry, "Library error: error while send heartbeat", 0 TSRMLS_CC);
+            return;
+        }
+    } else {
+        zend_throw_exception(amqp_connection_exception_class_entry, "Error while try send heartbeat: not connected", 0 TSRMLS_CC);
+    }
+
+    RETURN_TRUE;
+}
+/* }}} */
+
 
 /* {{{ proto amqp::getLogin()
 get the login */
@@ -1506,6 +1531,9 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_amqp_connection_class_preconnect, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_amqp_connection_class_sendHeartbeat, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_amqp_connection_class_getLogin, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 0)
 ZEND_END_ARG_INFO()
 
@@ -1657,6 +1685,8 @@ zend_function_entry amqp_connection_class_functions[] = {
 		PHP_ME(amqp_connection_class, disconnect, 	arginfo_amqp_connection_class_disconnect,	ZEND_ACC_PUBLIC)
 		PHP_ME(amqp_connection_class, reconnect, 	arginfo_amqp_connection_class_reconnect,	ZEND_ACC_PUBLIC)
 		PHP_ME(amqp_connection_class, preconnect, 	arginfo_amqp_connection_class_preconnect,	ZEND_ACC_PUBLIC)
+
+        PHP_ME(amqp_connection_class, sendHeartbeat, arginfo_amqp_connection_class_sendHeartbeat, ZEND_ACC_PUBLIC)
 
 		PHP_ME(amqp_connection_class, getLogin, 	arginfo_amqp_connection_class_getLogin,		ZEND_ACC_PUBLIC)
 		PHP_ME(amqp_connection_class, setLogin, 	arginfo_amqp_connection_class_setLogin,		ZEND_ACC_PUBLIC)

@@ -74,6 +74,15 @@ class AMQPConnection
     }
 
     /**
+     * Manual send heartbeat if it necessary
+     *
+     * @return boolean TRUE on success or throws an exception on failure.
+     */
+    public function sendHeartbeat()
+    {
+    }
+
+    /**
      * Get the configured host.
      *
      * @return string The configured hostname of the broker
