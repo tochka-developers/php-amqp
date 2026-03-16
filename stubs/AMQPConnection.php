@@ -5,17 +5,41 @@
  */
 class AMQPConnection
 {
-    /**
-     * Establish a transient connection with the AMQP broker.
-     *
-     * This method will initiate a connection with the AMQP broker.
-     *
-     * @throws AMQPConnectionException
-     * @return boolean TRUE on success or throw an exception on failure.
-     */
-    public function connect()
-    {
-    }
+    private string $login;
+
+    private string $password;
+
+    private string $host;
+
+    private string $vhost;
+
+    private int $port;
+
+    private float $readTimeout;
+
+    private float $writeTimeout;
+
+    private float $connectTimeout;
+
+    private float $rpcTimeout;
+
+    private int $channelMax;
+
+    private int $frameMax;
+
+    private int $heartbeat;
+
+    private ?string $cacert;
+
+    private ?string $key;
+
+    private ?string $cert;
+
+    private bool $verify = true;
+
+    private int $saslMethod = AMQP_SASL_METHOD_PLAIN;
+
+    private ?string $connectionName;
 
     /**
      * Create an instance of AMQPConnection.
@@ -30,10 +54,10 @@ class AMQPConnection
      *      'vhost' => amqp.vhost The virtual host on the host. Note: Max 128 characters.
      *      'login' => amqp.login The login name to use. Note: Max 128 characters.
      *      'password' => amqp.password Password. Note: Max 128 characters.
-     *      'read_timeout'  => Timeout in for income activity. Note: 0 or greater seconds. May be fractional.
-     *      'write_timeout' => Timeout in for outcome activity. Note: 0 or greater seconds. May be fractional.
+     *      'read_timeout'  => Timeout in for consume. Note: 0 or greater seconds. May be fractional.
+     *      'write_timeout' => Timeout in for publish. Note: 0 or greater seconds. May be fractional.
      *      'connect_timeout' => Connection timeout. Note: 0 or greater seconds. May be fractional.
-     *      'rpc_timeout' => RPC timeout. Note: 0 or greater seconds. May be fractional.
+     *      'rpc_timeout' => Timeout for RPC-style AMQP methods. Note: 0 or greater seconds. May be fractional.
      *
      *      Connection tuning options (see http://www.rabbitmq.com/amqp-0-9-1-reference.html#connection.tune for details):
      *      'channel_max' => Specifies highest channel number that the server permits. 0 means standard extension limit
@@ -53,12 +77,49 @@ class AMQPConnection
      *      'key'    => Path to the client key in PEM format.
      *      'verify' => Enable or disable peer verification. If peer verification is enabled then the common name in the
      *                  server certificate must match the server name. Peer verification is enabled by default.
+     *
+     *      'connection_name' => A user determined name for the connection
      * )
      *
      * @param array $credentials Optional array of credential information for
      *                           connecting to the AMQP broker.
      */
-    public function __construct(array $credentials = array())
+    public function __construct(array $credentials = [])
+    {
+    }
+
+    /**
+     * Check whether the connection to the AMQP broker is still valid.
+     *
+     * Cannot reliably detect dropped connections or unusual socket errors, as it does not actively
+     * engage the socket.
+     *
+     * @return boolean TRUE if connected, FALSE otherwise.
+     */
+    public function isConnected(): bool
+    {
+    }
+
+    /**
+     * Whether connection persistent.
+     *
+     * When no connection is established, it will always return FALSE. The same disclaimer as for
+     * {@see AMQPConnection::isConnected()} applies.
+     *
+     * @return boolean TRUE if persistently connected, FALSE otherwise.
+     */
+    public function isPersistent(): bool
+    {
+    }
+
+    /**
+     * Establish a transient connection with the AMQP broker.
+     *
+     * This method will initiate a connection with the AMQP broker.
+     *
+     * @throws AMQPConnectionException
+     */
+    public function connect(): void
     {
     }
 
@@ -67,9 +128,51 @@ class AMQPConnection
      *
      * This method will close an open connection with the AMQP broker.
      *
-     * @return boolean true if connection was successfully closed, false otherwise.
+     * @throws AMQPConnectionException When attempting to disconnect a persistent connection
      */
-    public function disconnect()
+    public function disconnect(): void
+    {
+    }
+
+    /**
+     * Close any open transient connections and initiate a new one with the AMQP broker.
+     *
+     * @throws AMQPConnectionException
+     */
+    public function reconnect(): void
+    {
+    }
+
+    /**
+     * Establish a persistent connection with the AMQP broker.
+     *
+     * This method will initiate a connection with the AMQP broker
+     * or reuse an existing one if present.
+     *
+     * @throws AMQPConnectionException
+     */
+    public function pconnect(): void
+    {
+    }
+
+    /**
+     * Closes a persistent connection with the AMQP broker.
+     *
+     * This method will close an open persistent connection with the AMQP
+     * broker.
+     *
+     * @throws AMQPConnectionException When attempting to disconnect a transient connection
+     */
+    public function pdisconnect(): void
+    {
+    }
+
+    /**
+     * Close any open persistent connections and initiate a new one with the AMQP broker.
+     *
+     * @throws AMQPConnectionException
+     */
+    public function preconnect(): void
     {
     }
 
@@ -87,7 +190,7 @@ class AMQPConnection
      *
      * @return string The configured hostname of the broker
      */
-    public function getHost()
+    public function getHost(): string
     {
     }
 
@@ -96,7 +199,7 @@ class AMQPConnection
      *
      * @return string The configured login as a string.
      */
-    public function getLogin()
+    public function getLogin(): string
     {
     }
 
@@ -105,7 +208,7 @@ class AMQPConnection
      *
      * @return string The configured password as a string.
      */
-    public function getPassword()
+    public function getPassword(): string
     {
     }
 
@@ -114,7 +217,7 @@ class AMQPConnection
      *
      * @return int The configured port as an integer.
      */
-    public function getPort()
+    public function getPort(): int
     {
     }
 
@@ -123,66 +226,9 @@ class AMQPConnection
      *
      * @return string The configured virtual host as a string.
      */
-    public function getVhost()
+    public function getVhost(): string
     {
     }
-
-    /**
-     * Check whether the connection to the AMQP broker is still valid.
-     *
-     * It does so by checking the return status of the last connect-command.
-     *
-     * @return boolean True if connected, false otherwise.
-     */
-    public function isConnected()
-    {
-    }
-
-    /**
-     * Establish a persistent connection with the AMQP broker.
-     *
-     * This method will initiate a connection with the AMQP broker
-     * or reuse an existing one if present.
-     *
-     * @throws AMQPConnectionException
-     * @return boolean TRUE on success or throws an exception on failure.
-     */
-    public function pconnect()
-    {
-    }
-
-    /**
-     * Closes a persistent connection with the AMQP broker.
-     *
-     * This method will close an open persistent connection with the AMQP
-     * broker.
-     *
-     * @return boolean true if connection was found and closed,
-     *                 false if no persistent connection with this host,
-     *                 port, vhost and login could be found,
-     */
-    public function pdisconnect()
-    {
-    }
-
-    /**
-     * Close any open transient connections and initiate a new one with the AMQP broker.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
-     */
-    public function reconnect()
-    {
-    }
-
-    /**
-     * Close any open persistent connections and initiate a new one with the AMQP broker.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
-     */
-    public function preconnect()
-    {
-    }
-
 
     /**
      * Set the hostname used to connect to the AMQP broker.
@@ -190,10 +236,8 @@ class AMQPConnection
      * @param string $host The hostname of the AMQP broker.
      *
      * @throws AMQPConnectionException If host is longer then 1024 characters.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setHost($host)
+    public function setHost(string $host): void
     {
     }
 
@@ -204,10 +248,8 @@ class AMQPConnection
      *                      with the AMQP broker.
      *
      * @throws AMQPConnectionException If login is longer then 32 characters.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setLogin($login)
+    public function setLogin(string $login): void
     {
     }
 
@@ -218,10 +260,8 @@ class AMQPConnection
      *                         with the AMQP broker.
      *
      * @throws AMQPConnectionException If password is longer then 32characters.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setPassword($password)
+    public function setPassword(string $password): void
     {
     }
 
@@ -232,10 +272,8 @@ class AMQPConnection
      *
      * @throws AMQPConnectionException If port is longer not between
      *                                 1 and 65535.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setPort($port)
+    public function setPort(int $port): void
     {
     }
 
@@ -246,10 +284,8 @@ class AMQPConnection
      *                      broker.
      *
      * @throws AMQPConnectionException If host is longer then 32 characters.
-     *
-     * @return boolean true on success or false on failure.
      */
-    public function setVhost($vhost)
+    public function setVhost(string $vhost): void
     {
     }
 
@@ -258,13 +294,9 @@ class AMQPConnection
      *
      * @deprecated use AMQPConnection::setReadTimeout($timeout) instead
      *
-     * @param float $timeout
-     *
      * @throws AMQPConnectionException If timeout is less than 0.
-     *
-     * @return bool
      */
-    public function setTimeout($timeout)
+    public function setTimeout(float $timeout): void
     {
     }
 
@@ -273,88 +305,73 @@ class AMQPConnection
      * from AMQP broker
      *
      * @deprecated use AMQPConnection::getReadTimeout() instead
-     *
-     * @return float
      */
-    public function getTimeout()
+    public function getTimeout(): float
     {
     }
 
     /**
      * Sets the interval of time (in seconds) to wait for income activity from AMQP broker
      *
-     * @param float $timeout
-     *
      * @throws AMQPConnectionException If timeout is less than 0.
-     *
-     * @return bool
      */
-    public function setReadTimeout($timeout)
+    public function setReadTimeout(float $timeout): void
     {
     }
 
     /**
      * Get the configured interval of time (in seconds) to wait for income activity
      * from AMQP broker
-     *
-     * @return float
      */
-    public function getReadTimeout()
+    public function getReadTimeout(): float
     {
     }
 
     /**
      * Sets the interval of time (in seconds) to wait for outcome activity to AMQP broker
      *
-     * @param float $timeout
-     *
      * @throws AMQPConnectionException If timeout is less than 0.
-     *
-     * @return bool
      */
-    public function setWriteTimeout($timeout)
+    public function setWriteTimeout(float $timeout): void
     {
     }
 
     /**
      * Get the configured interval of time (in seconds) to wait for outcome activity
      * to AMQP broker
-     *
-     * @return float
      */
-    public function getWriteTimeout()
+    public function getWriteTimeout(): float
+    {
+    }
+
+    /**
+     * Get the configured timeout (in seconds) for connecting to the AMQP broker
+     */
+    public function getConnectTimeout(): float
     {
     }
 
     /**
      * Sets the interval of time to wait (in seconds) for RPC activity to AMQP broker
      *
-     * @param float $timeout
-     *
      * @throws AMQPConnectionException If timeout is less than 0.
-     *
-     * @return bool
      */
-    public function setRpcTimeout($timeout)
+    public function setRpcTimeout(float $timeout): void
     {
     }
 
     /**
      * Get the configured interval of time (in seconds) to wait for RPC activity
      * to AMQP broker
-     *
-     * @return float
      */
-    public function getRpcTimeout()
+    public function getRpcTimeout(): float
     {
     }
 
     /**
      * Return last used channel id during current connection session.
-     *
-     * @return int
      */
-    public function getUsedChannels()
+    public function getUsedChannels(): int
     {
     }
 
@@ -363,10 +380,8 @@ class AMQPConnection
      *
      * When connection is connected, effective connection value returned, which is normally the same as original
      * correspondent value passed to constructor, otherwise original value passed to constructor returned.
-     *
-     * @return int
      */
-    public function getMaxChannels()
+    public function getMaxChannels(): int
     {
     }
 
@@ -375,10 +390,8 @@ class AMQPConnection
      *
      * When connection is connected, effective connection value returned, which is normally the same as original
      * correspondent value passed to constructor, otherwise original value passed to constructor returned.
-     *
-     * @return int
      */
-    public function getMaxFrameSize()
+    public function getMaxFrameSize(): int
     {
     }
 
@@ -387,39 +400,22 @@ class AMQPConnection
      *
      * When connection is connected, effective connection value returned, which is normally the same as original
      * correspondent value passed to constructor, otherwise original value passed to constructor returned.
-     *
-     * @return int
      */
-    public function getHeartbeatInterval()
-    {
-    }
-
-    /**
-     * Whether connection persistent.
-     *
-     * When connection is not connected, boolean false always returned
-     *
-     * @return bool
-     */
-    public function isPersistent()
+    public function getHeartbeatInterval(): int
     {
     }
 
     /**
      * Get path to the CA cert file in PEM format
-     *
-     * @return string
      */
-    public function getCACert()
+    public function getCACert(): ?string
     {
     }
 
     /**
      * Set path to the CA cert file in PEM format
-     *
-     * @param string $cacert
      */
-    public function setCACert($cacert)
+    public function setCACert(?string $cacert): void
     {
     }
 
@@ -479,71 +475,64 @@ class AMQPConnection
 
     /**
      * Get path to the client certificate in PEM format
-     *
-     * @return string
      */
-    public function getCert()
+    public function getCert(): ?string
     {
     }
 
     /**
      * Set path to the client certificate in PEM format
-     *
-     * @param string $cert
      */
-    public function setCert($cert)
+    public function setCert(?string $cert): void
     {
     }
 
     /**
      * Get path to the client key in PEM format
-     *
-     * @return string
      */
-    public function getKey()
+    public function getKey(): ?string
     {
     }
 
     /**
      * Set path to the client key in PEM format
-     *
-     * @param string $key
      */
-    public function setKey($key)
+    public function setKey(?string $key): void
     {
     }
 
     /**
      * Get whether peer verification enabled or disabled
-     *
-     * @return bool
      */
-    public function getVerify()
+    public function getVerify(): bool
     {
     }
 
     /**
      * Enable or disable peer verification
-     *
-     * @param bool $verify
      */
-    public function setVerify($verify)
+    public function setVerify(bool $verify): void
     {
     }
 
     /**
      * set authentication method
      *
-     * @param int $method AMQP_SASL_METHOD_PLAIN | AMQP_SASL_METHOD_EXTERNAL
+     * @param int $saslMethod AMQP_SASL_METHOD_PLAIN | AMQP_SASL_METHOD_EXTERNAL
      */
-    public function setSaslMethod($method)
+    public function setSaslMethod(int $saslMethod): void
     {
     }
 
-    /**
-     * @return int
-     */
-    public function getSaslMethod()
+    public function getSaslMethod(): int
+    {
+    }
+
+    public function setConnectionName(?string $connectionName): void
+    {
+    }
+
+    public function getConnectionName(): ?string
     {
     }
 }

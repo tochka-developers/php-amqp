@@ -1,23 +1,25 @@
 --TEST--
 AMQPQueue - orphaned envelope
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) {
-    print "skip";
-} ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
-$connection = new AMQPConnection();
-$connection->connect();
+$cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
+$cnn->connect();
 
-$channel1 = new AMQPChannel($connection);
+$channel1 = new AMQPChannel($cnn);
 
 $ex1 = new AMQPExchange($channel1);
-$ex1->setName('ex1-' . microtime(true));
+$ex1->setName('ex1-' . bin2hex(random_bytes(32)));
 $ex1->setType(AMQP_EX_TYPE_FANOUT);
 $ex1->declareExchange();
 
 $q1 = new AMQPQueue($channel1);
-$q1->setName('q1-' . microtime(true));
+$q1->setName('q1-' . bin2hex(random_bytes(32)));
 $q1->declareQueue();
 $q1->bind($ex1->getName());
 
@@ -34,7 +36,7 @@ $q1->cancel();
 $q1 = null;
 
 $q2 = new AMQPQueue($channel1);
-$q2->setName('q1-' . microtime(true));
+$q2->setName('q1-' . bin2hex(random_bytes(32)));
 $q2->declareQueue();
 $q2->bind($ex1->getName());
 
@@ -47,7 +49,7 @@ try {
 
 } catch (AMQPEnvelopeException $e) {
     echo  get_class($e), ': ', $e->getMessage(), ':', PHP_EOL, PHP_EOL;
-    var_dump($e->envelope);
+    var_dump($e->getEnvelope());
 }
 
 ?>
@@ -55,45 +57,45 @@ try {
 AMQPEnvelopeException: Orphaned envelope:
 
 object(AMQPEnvelope)#6 (20) {
-  ["content_type":"AMQPBasicProperties":private]=>
+  ["contentType":"AMQPBasicProperties":private]=>
   string(10) "text/plain"
-  ["content_encoding":"AMQPBasicProperties":private]=>
-  string(0) ""
+  ["contentEncoding":"AMQPBasicProperties":private]=>
+  NULL
   ["headers":"AMQPBasicProperties":private]=>
   array(0) {
   }
-  ["delivery_mode":"AMQPBasicProperties":private]=>
+  ["deliveryMode":"AMQPBasicProperties":private]=>
   int(1)
   ["priority":"AMQPBasicProperties":private]=>
   int(0)
-  ["correlation_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["reply_to":"AMQPBasicProperties":private]=>
-  string(0) ""
+  ["correlationId":"AMQPBasicProperties":private]=>
+  NULL
+  ["replyTo":"AMQPBasicProperties":private]=>
+  NULL
   ["expiration":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["message_id":"AMQPBasicProperties":private]=>
-  string(0) ""
+  NULL
+  ["messageId":"AMQPBasicProperties":private]=>
+  NULL
   ["timestamp":"AMQPBasicProperties":private]=>
   int(0)
   ["type":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["user_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["app_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["cluster_id":"AMQPBasicProperties":private]=>
-  string(0) ""
+  NULL
+  ["userId":"AMQPBasicProperties":private]=>
+  NULL
+  ["appId":"AMQPBasicProperties":private]=>
+  NULL
+  ["clusterId":"AMQPBasicProperties":private]=>
+  NULL
   ["body":"AMQPEnvelope":private]=>
   string(13) "test orphaned"
-  ["consumer_tag":"AMQPEnvelope":private]=>
+  ["consumerTag":"AMQPEnvelope":private]=>
   string(31) "amq.ctag-%s"
-  ["delivery_tag":"AMQPEnvelope":private]=>
+  ["deliveryTag":"AMQPEnvelope":private]=>
   int(2)
-  ["is_redelivery":"AMQPEnvelope":private]=>
+  ["isRedelivery":"AMQPEnvelope":private]=>
   bool(false)
-  ["exchange_name":"AMQPEnvelope":private]=>
-  string(%d) "ex1-%f"
-  ["routing_key":"AMQPEnvelope":private]=>
+  ["exchangeName":"AMQPEnvelope":private]=>
+  string(%d) "ex1-%s"
+  ["routingKey":"AMQPEnvelope":private]=>
   string(0) ""
 }

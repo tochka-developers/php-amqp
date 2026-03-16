@@ -1,20 +1,25 @@
 --TEST--
 AMQPConnection heartbeats support (with active consumer)
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+elseif (getenv("SKIP_SLOW_TESTS")) print "skip slow test and SKIP_SLOW_TESTS is set";
+?>
 --FILE--
 <?php
 $heartbeat = 2;
 $credentials = array('heartbeat' => $heartbeat, 'read_timeout' => $heartbeat * 20);
 $cnn = new AMQPConnection($credentials);
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 var_dump($cnn);
 
 $ch = new AMQPChannel($cnn);
 
-$q_dead_name = 'test.queue.dead.' . microtime(true);
-$q_name      = 'test.queue.' . microtime(true);
+$q_dead_name = 'test.queue.dead.' . bin2hex(random_bytes(32));
+$q_name      = 'test.queue.' . bin2hex(random_bytes(32));
 
 $e = new AMQPExchange($ch);
 
@@ -66,36 +71,36 @@ object(AMQPConnection)#1 (18) {
   ["password":"AMQPConnection":private]=>
   string(5) "guest"
   ["host":"AMQPConnection":private]=>
-  string(9) "localhost"
+  string(%d) "%s"
   ["vhost":"AMQPConnection":private]=>
   string(1) "/"
   ["port":"AMQPConnection":private]=>
   int(5672)
-  ["read_timeout":"AMQPConnection":private]=>
+  ["readTimeout":"AMQPConnection":private]=>
   float(40)
-  ["write_timeout":"AMQPConnection":private]=>
+  ["writeTimeout":"AMQPConnection":private]=>
   float(0)
-  ["connect_timeout":"AMQPConnection":private]=>
+  ["connectTimeout":"AMQPConnection":private]=>
   float(0)
-  ["rpc_timeout":"AMQPConnection":private]=>
+  ["rpcTimeout":"AMQPConnection":private]=>
   float(0)
-  ["channel_max":"AMQPConnection":private]=>
-  int(256)
-  ["frame_max":"AMQPConnection":private]=>
+  ["frameMax":"AMQPConnection":private]=>
   int(131072)
+  ["channelMax":"AMQPConnection":private]=>
+  int(256)
   ["heartbeat":"AMQPConnection":private]=>
   int(2)
   ["cacert":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["key":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["cert":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["verify":"AMQPConnection":private]=>
   bool(true)
-  ["sasl_method":"AMQPConnection":private]=>
+  ["saslMethod":"AMQPConnection":private]=>
   int(0)
-  ["connection_name":"AMQPConnection":private]=>
+  ["connectionName":"AMQPConnection":private]=>
   NULL
 }
 Consumed: test message 1 (should be dead lettered)

@@ -1,23 +1,25 @@
 --TEST--
 AMQPExchange publish with properties - nested header values
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) {
-    print "skip";
-} ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
 $q = new AMQPQueue($ch);
-$q->setName('queue-' . microtime(true));
+$q->setName('queue-' . bin2hex(random_bytes(32)));
 $q->declareQueue();
 $q->bind($ex->getName());
 
@@ -34,16 +36,17 @@ $headers = array(
 
 $ex->publish('message', 'routing.key', AMQP_NOPARAM, array('headers' => $headers));
 
-$message =$q->get(AMQP_AUTOACK);
+$message = $q->get(AMQP_AUTOACK);
 var_dump($message->getHeaders());
 var_dump($headers);
 echo $message->getHeaders() === $headers ? 'same' : 'differs';
 echo PHP_EOL, PHP_EOL;
 
 
-$headers = array(
+$originalHeaders = array(
     'x-death' => array(
         array (
+            'count' => 1,
             'reason' => 'rejected',
             'queue' => 'my_queue',
             'time' => 1410527691,
@@ -53,12 +56,16 @@ $headers = array(
     )
 );
 
-$ex->publish('message', 'routing.key', AMQP_NOPARAM, array('headers' => $headers));
+$ex->publish('message', 'routing.key', AMQP_NOPARAM, array('headers' => $originalHeaders));
 
-$message =$q->get(AMQP_AUTOACK);
-var_dump($message->getHeaders());
-var_dump($headers);
-echo $message->getHeaders() === $headers ? 'same' : 'differs';
+$message = $q->get(AMQP_AUTOACK);
+$messageHeaders = $message->getHeaders();
+ksort($messageHeaders);
+var_dump($originalHeaders);
+var_dump($messageHeaders);
+echo $messageHeaders['x-death'][0]['time']->getTimestamp() === (float) $originalHeaders['x-death'][0]['time'] ? "timestamp matches\n" : "timestamp differs\n";
+unset($messageHeaders['x-death'][0]['time'], $originalHeaders['x-death'][0]['time']);
+echo $messageHeaders === $originalHeaders ? "headers (except timestamp) identical\n" : "headers (except timestamp) also differ\n";
 echo PHP_EOL, PHP_EOL;
 
 ?>
@@ -101,7 +108,9 @@ array(1) {
   ["x-death"]=>
   array(1) {
     [0]=>
-    array(5) {
+    array(6) {
+      ["count"]=>
+      int(1)
       ["reason"]=>
       string(8) "rejected"
       ["queue"]=>
@@ -122,13 +131,18 @@ array(1) {
   ["x-death"]=>
   array(1) {
     [0]=>
-    array(5) {
+    array(6) {
+      ["count"]=>
+      int(1)
       ["reason"]=>
       string(8) "rejected"
       ["queue"]=>
       string(8) "my_queue"
       ["time"]=>
-      int(1410527691)
+      object(AMQPTimestamp)#7 (1) {
+        ["timestamp":"AMQPTimestamp":private]=>
+        float(1410527691)
+      }
       ["exchange"]=>
       string(11) "my_exchange"
       ["routing-keys"]=>
@@ -139,4 +153,5 @@ array(1) {
     }
   }
 }
-same
+timestamp matches
+headers (except timestamp) identical

@@ -1,7 +1,11 @@
 --TEST--
 AMQPExchange::publish() - publish with confirms
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+elseif (getenv("SKIP_SLOW_TESTS")) print "skip slow test and SKIP_SLOW_TESTS is set";
+?>
 <?php //print "skip - WIP"; ?>
 --FILE--
 <?php
@@ -15,6 +19,7 @@ set_error_handler('exception_error_handler');
 
 
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 //$cnn->setReadTimeout(2);
 $cnn->connect();
 
@@ -30,14 +35,14 @@ try {
 
 
 $ex1 = new AMQPExchange($ch);
-$ex1->setName("exchange-" . microtime(true));
+$ex1->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex1->setType(AMQP_EX_TYPE_FANOUT);
 $ex1->setFlags(AMQP_AUTODELETE);
 $ex1->declareExchange();
 
 
-echo $ex1->publish('message 1', 'routing.key') ? 'true' : 'false', PHP_EOL;
-echo $ex1->publish('message 1', 'routing.key', AMQP_MANDATORY) ? 'true' : 'false', PHP_EOL;
+var_dump($ex1->publish('message 1', 'routing.key'));
+var_dump($ex1->publish('message 1', 'routing.key', AMQP_MANDATORY));
 
 try {
     $ch->waitForConfirm();
@@ -58,8 +63,8 @@ try {
 }
 
 
-echo $ex1->publish('message 1', 'routing.key') ? 'true' : 'false', PHP_EOL;
-echo $ex1->publish('message 1', 'routing.key', AMQP_MANDATORY) ? 'true' : 'false', PHP_EOL;
+var_dump($ex1->publish('message 1', 'routing.key'));
+var_dump($ex1->publish('message 1', 'routing.key', AMQP_MANDATORY));
 
 // ack_callback(int $delivery_tag, bool $multiple) : bool;
 // nack_callback(int $delivery_tag, bool $multiple, bool $requeue) : bool;
@@ -89,8 +94,8 @@ try {
 $ex1->delete();
 
 $ex2 = new AMQPExchange($ch);
-$ex2->setName("exchange-nonexistent-" . microtime(true));
-echo $ex2->publish('message 2', 'routing.key') ? 'true' : 'false', PHP_EOL;
+$ex2->setName("exchange-nonexistent-" . bin2hex(random_bytes(32)));
+var_dump($ex2->publish('message 2', 'routing.key'));
 
 try {
     $ch->waitForConfirm(1);
@@ -101,13 +106,13 @@ try {
 ?>
 --EXPECTF--
 AMQPQueueException(0): Wait timeout exceed
-true
-true
+NULL
+NULL
 Unhandled basic.ack method from server received. Use AMQPChannel::setConfirmCallback() to process it.
 Unhandled basic.return method from server received. Use AMQPChannel::setReturnCallback() to process it.
 Unhandled basic.ack method from server received. Use AMQPChannel::setConfirmCallback() to process it.
-true
-true
+NULL
+NULL
 Message acked
 array(2) {
   [0]=>
@@ -123,5 +128,5 @@ array(2) {
   [1]=>
   bool(false)
 }
-true
-AMQPChannelException(404): Server channel error: 404, message: NOT_FOUND - no exchange 'exchange-nonexistent-%f' in vhost '/'
+NULL
+AMQPChannelException(404): Server channel error: 404, message: NOT_FOUND - no exchange 'exchange-nonexistent-%s' in vhost '/'

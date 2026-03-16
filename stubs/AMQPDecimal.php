@@ -2,31 +2,51 @@
 
 /**
  * stub class representing AMQPDecimal from pecl-amqp
+ *
+ * @readonly
  */
-final class AMQPDecimal
+final /* readonly */ class AMQPDecimal implements AMQPValue
 {
-    const EXPONENT_MIN = 0;
-    const EXPONENT_MAX = 255;
-    const SIGNIFICAND_MIN = 0;
-    const SIGNIFICAND_MAX = 4294967295;
+    /**
+     * @var int
+     */
+    public const EXPONENT_MIN = 0;
 
     /**
-     * @param $exponent
-     * @param $significand
-     *
-     * @throws AMQPExchangeValue
+     * @var int
      */
-    public function __construct($exponent, $significand)
+    public const EXPONENT_MAX = 255;
+
+    /**
+     * @var int
+     */
+    public const SIGNIFICAND_MIN = 0;
+
+    /**
+     * @var int
+     */
+    public const SIGNIFICAND_MAX = 4294967295;
+
+    private int $exponent;
+
+    private int $significand;
+
+    /**
+     * @throws AMQPValueException
+     */
+    public function __construct(int $exponent, int $significand)
     {
     }
 
-    /** @return int */
-    public function getExponent()
+    public function getExponent(): int
     {
     }
 
-    /** @return int */
-    public function getSignificand()
+    public function getSignificand(): int
+    {
+    }
+
+    public function toAmqpValue()
     {
     }
 }

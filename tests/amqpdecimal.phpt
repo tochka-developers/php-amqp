@@ -2,15 +2,15 @@
 AMQPDecimal
 --SKIPIF--
 <?php
-if (!extension_loaded("amqp") || version_compare(PHP_VERSION, '5.3', '<')) {
-  print "skip";
-}
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+?>
 --FILE--
 <?php
 
 $decimal = new AMQPDecimal(1, 2);
 var_dump($decimal->getExponent(), $decimal->getSignificand());
-
+var_dump($decimal === $decimal->toAmqpValue());
+var_dump($decimal instanceof AMQPValue);
 
 try {
     new AMQPDecimal(-1, 1);
@@ -50,6 +50,8 @@ var_dump(AMQPDecimal::SIGNIFICAND_MAX);
 --EXPECT--
 int(1)
 int(2)
+bool(true)
+bool(true)
 Decimal exponent value must be unsigned.
 Decimal significand value must be unsigned.
 Decimal exponent value must be less than 255.

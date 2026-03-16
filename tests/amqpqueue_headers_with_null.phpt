@@ -1,20 +1,24 @@
 --TEST--
 AMQPQueue::get headers
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName('exchange' . microtime(true));
+$ex->setName('exchange' . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_TOPIC);
 $ex->declareExchange();
 $q = new AMQPQueue($ch);
-$q->setName('queue1' . microtime(true));
+$q->setName('queue1' . bin2hex(random_bytes(32)));
 $q->declareQueue();
 $q->bind($ex->getName(), '#');
 

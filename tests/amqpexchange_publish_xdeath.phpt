@@ -1,12 +1,14 @@
 --TEST--
 AMQPExchange publish with properties - nested header values
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) {
-    print "skip";
-} ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
@@ -76,7 +78,7 @@ function assert_xdeath(AMQPEnvelope $envelope, $exchangeName, $queueName) {
         return 'unexpected-reason: ' . json_encode($header);
     }
 
-    if (!isset($header[0]['time']) || !$header[0]['time'] instanceof AMQPTimestamp) {
+    if (!isset($header[0]['time']) || !$header[0]['time'] instanceof AMQPTimestamp || $header[0]['time']->getTimestamp() < 1690465578) {
         return 'unexpected-time: ' . json_encode($header);
     }
 

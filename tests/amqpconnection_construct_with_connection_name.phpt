@@ -1,7 +1,9 @@
 --TEST--
-AMQPConnection constructor with connection_name parameter in creadentials
+AMQPConnection constructor with connection_name parameter in credentials
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+?>
 --FILE--
 <?php
 // Test connection name as a string

@@ -3,17 +3,20 @@ AMQPChannel - Setting both consumer and channel wide prefetch sizes.
 --SKIPIF--
 <?php
 if (!extension_loaded("amqp")) {
-    print "skip";
+    print "skip AMQP extension is not loaded";
+} elseif (!getenv('PHP_AMQP_HOST')) {
+    print "skip PHP_AMQP_HOST environment variable is not set";
 } else {
     try {
         $cnn = new AMQPConnection();
+        $cnn->setHost(getenv('PHP_AMQP_HOST'));
         $cnn->connect();
         $ch = new AMQPChannel($cnn);
         $ch->setPrefetchSize(123);
         $ch->setGlobalPrefetchSize(123);
     } catch (AMQPConnectionException $e) {
         if ($e->getCode() === 540 && strpos($e->getMessage(), "NOT_IMPLEMENTED") !== false) {
-            print "skip";
+            print "skip prefetch size is not supported by the AMQP server";
         }
     }
 }
@@ -21,6 +24,7 @@ if (!extension_loaded("amqp")) {
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 $ch = new AMQPChannel($cnn);
 

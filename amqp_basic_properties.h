@@ -26,22 +26,8 @@
 
 extern zend_class_entry *amqp_basic_properties_class_entry;
 
-void parse_amqp_table(amqp_table_t *table, zval *result TSRMLS_DC);
-void php_amqp_basic_properties_extract(amqp_basic_properties_t *p, zval *obj TSRMLS_DC);
-
-
-void php_amqp_basic_properties_convert_to_zval(amqp_basic_properties_t *props, zval *obj TSRMLS_DC);
-void php_amqp_basic_properties_set_empty_headers(zval *obj TSRMLS_DC);
-
+void php_amqp_basic_properties_extract(amqp_basic_properties_t *props, zval *obj);
+void php_amqp_basic_properties_to_zval(amqp_basic_properties_t *props, zval *obj);
+void php_amqp_basic_properties_set_empty_headers(zval *obj);
 
 PHP_MINIT_FUNCTION(amqp_basic_properties);
-
-
-/*
-*Local variables:
-*tab-width: 4
-*c-basic-offset: 4
-*End:
-*vim600: noet sw=4 ts=4 fdm=marker
-*vim<600: noet sw=4 ts=4
-*/

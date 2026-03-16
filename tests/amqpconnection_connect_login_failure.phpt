@@ -1,7 +1,10 @@
 --TEST--
 AMQPConnection connect login failure
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 //ini_set('amqp.connect_timeout', 60);
@@ -9,8 +12,9 @@ AMQPConnection connect login failure
 //ini_set('amqp.write_timeout', 60);
 
 $cnn = new AMQPConnection();
-$cnn->setLogin('nonexistent-login-'.microtime(true));
-$cnn->setPassword('nonexistent-password-'.microtime(true));
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
+$cnn->setLogin('nonexistent-login-'. bin2hex(random_bytes(32)));
+$cnn->setPassword('nonexistent-password-'. bin2hex(random_bytes(32)));
 
 //var_dump($cnn);
 
@@ -24,10 +28,8 @@ try {
 }
 //
 echo ($cnn->isConnected() ? 'connected' : 'disconnected'), PHP_EOL;
-
-// NOTE: in real-world environment (incl. travis ci) "a socket error occurred" happens, but in vagrant environment "connection closed unexpectedly" happens. WTF?
 ?>
 --EXPECTF--
 disconnected
-AMQPConnectionException(%d): %s error: %s - Potential login failure.
+AMQPConnectionException(403): %s
 disconnected

@@ -1,10 +1,14 @@
 --TEST--
 AMQPQueue::get() doesn't return the message
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
@@ -15,7 +19,7 @@ $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
 $q = new AMQPQueue($ch);
-$q->setName('queue' . microtime(true));
+$q->setName('queue' . bin2hex(random_bytes(32)));
 $q->setFlags(AMQP_DURABLE);
 $q->declareQueue();
 
@@ -41,21 +45,21 @@ $ex->delete();
 ?>
 --EXPECT--
 message received from get:
-getAppId => ''
+getAppId => NULL
 getBody => 'message'
-getContentEncoding => ''
+getContentEncoding => NULL
 getContentType => 'text/plain'
-getCorrelationId => ''
+getCorrelationId => NULL
 getDeliveryTag => 1
 getExchangeName => 'exchange_testing_19707'
-getExpiration => ''
+getExpiration => NULL
 getHeaders => array (
 )
-getMessageId => ''
+getMessageId => NULL
 getPriority => 0
-getReplyTo => ''
+getReplyTo => NULL
 getRoutingKey => 'routing.key'
 getTimeStamp => 0
-getType => ''
-getUserId => ''
+getType => NULL
+getUserId => NULL
 isRedelivery => false

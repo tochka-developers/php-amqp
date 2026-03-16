@@ -1,15 +1,19 @@
 --TEST--
 Channel creation race condition (https://github.com/pdezwart/php-amqp/issues/50) (1)
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
-$connection = new AMQPConnection();
-$connection->connect();
+$cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
+$cnn->connect();
 
 for ($i = 0; $i < 3; $i++) {
 
-    $channel = new AMQPChannel($connection);
+    $channel = new AMQPChannel($cnn);
     var_dump($channel->getChannelId());
 
     $queue = new AMQPQueue($channel);
@@ -23,5 +27,5 @@ for ($i = 0; $i < 3; $i++) {
 --EXPECT--
 int(1)
 int(2)
-int(1)
+int(3)
 ==DONE==

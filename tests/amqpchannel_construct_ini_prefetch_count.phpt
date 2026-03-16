@@ -2,15 +2,15 @@
 AMQPChannel - constructor with amqp.prefetch_count ini value set
 --SKIPIF--
 <?php
-if (!extension_loaded("amqp")) {
-    print "skip";
-}
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
 ?>
 --INI--
 amqp.prefetch_count=123
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 $ch = new AMQPChannel($cnn);
 

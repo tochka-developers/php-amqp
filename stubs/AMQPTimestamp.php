@@ -2,28 +2,39 @@
 
 /**
  * stub class representing AMQPTimestamp from pecl-amqp
+ *
+ * @readonly
  */
-final class AMQPTimestamp
+final /* readonly */ class AMQPTimestamp implements AMQPValue
 {
-    const MIN = "0";
-    const MAX = "18446744073709551616";
+    /**
+     * @var float
+     */
+    public const MIN = 0.0;
 
     /**
-     * @param string $timestamp
-     *
-     * @throws AMQPExchangeValue
+     * @var float
      */
-    public function __construct($timestamp)
+    public const MAX = 18446744073709551616;
+
+    private float $timestamp;
+
+    /**
+     * @throws AMQPValueException
+     */
+    public function __construct(float $timestamp)
     {
     }
 
-    /** @return string */
-    public function getTimestamp()
+    public function __toString(): string
     {
     }
 
-    /** @return string */
-    public function __toString()
+    public function getTimestamp(): float
+    {
+    }
+
+    public function toAmqpValue()
     {
     }
 }

@@ -1,7 +1,10 @@
 --TEST--
 AMQPConnection constructor with channel_max, frame_max and heartbeat limits
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $credentials = array(
@@ -10,46 +13,47 @@ $credentials = array(
     'heartbeat' => 5,
 );
 $cnn = new AMQPConnection($credentials);
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 var_dump($cnn);
 ?>
---EXPECT--
+--EXPECTF--
 object(AMQPConnection)#1 (18) {
   ["login":"AMQPConnection":private]=>
   string(5) "guest"
   ["password":"AMQPConnection":private]=>
   string(5) "guest"
   ["host":"AMQPConnection":private]=>
-  string(9) "localhost"
+  string(%d) "%s"
   ["vhost":"AMQPConnection":private]=>
   string(1) "/"
   ["port":"AMQPConnection":private]=>
   int(5672)
-  ["read_timeout":"AMQPConnection":private]=>
+  ["readTimeout":"AMQPConnection":private]=>
   float(0)
-  ["write_timeout":"AMQPConnection":private]=>
+  ["writeTimeout":"AMQPConnection":private]=>
   float(0)
-  ["connect_timeout":"AMQPConnection":private]=>
+  ["connectTimeout":"AMQPConnection":private]=>
   float(0)
-  ["rpc_timeout":"AMQPConnection":private]=>
+  ["rpcTimeout":"AMQPConnection":private]=>
   float(0)
-  ["channel_max":"AMQPConnection":private]=>
-  int(10)
-  ["frame_max":"AMQPConnection":private]=>
+  ["frameMax":"AMQPConnection":private]=>
   int(10240)
+  ["channelMax":"AMQPConnection":private]=>
+  int(10)
   ["heartbeat":"AMQPConnection":private]=>
   int(5)
   ["cacert":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["key":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["cert":"AMQPConnection":private]=>
-  string(0) ""
+  NULL
   ["verify":"AMQPConnection":private]=>
   bool(true)
-  ["sasl_method":"AMQPConnection":private]=>
+  ["saslMethod":"AMQPConnection":private]=>
   int(0)
-  ["connection_name":"AMQPConnection":private]=>
+  ["connectionName":"AMQPConnection":private]=>
   NULL
 }

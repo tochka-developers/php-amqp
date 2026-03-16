@@ -1,7 +1,9 @@
 --TEST--
 AMQPConnection setReadTimeout out of range
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
@@ -15,4 +17,4 @@ try {
 ?>
 --EXPECT--
 AMQPConnectionException
-Parameter 'read_timeout' must be greater than or equal to zero.
+Parameter 'readTimeout' must be greater than or equal to zero.
