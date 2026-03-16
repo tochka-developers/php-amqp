@@ -107,7 +107,7 @@ static size_t php_amqp_get_connection_hash(amqp_connection_params *params, char 
     return spprintf(
         hash,
         0,
-        "amqp_conn_res_h:%s_p:%d_v:%s_l:%s_p:%s_f:%d_c:%d_h:%d_cacert:%s_capath:s_cert:%s_key:%s_sasl_method:%d_connection_name:"
+        "amqp_conn_res_h:%s_p:%d_v:%s_l:%s_p:%s_f:%d_c:%d_h:%d_cacert:%s_capath:%s_cert:%s_key:%s_sasl_method:%d_connection_name:"
         "%s",
         params->host,
         params->port,
@@ -1048,11 +1048,11 @@ static PHP_METHOD(amqp_connection_class, sendHeartbeat)
 
     if (connection->connection_resource && connection->connection_resource->is_connected) {
         if (AMQP_STATUS_OK != amqp_send_heartbeat(connection->connection_resource->connection_state)) {
-            zend_throw_exception(amqp_connection_exception_class_entry, "Library error: error while send heartbeat", 0 TSRMLS_CC);
+            zend_throw_exception(amqp_connection_exception_class_entry, "Library error: error while send heartbeat", 0);
             return;
         }
     } else {
-        zend_throw_exception(amqp_connection_exception_class_entry, "Error while try send heartbeat: not connected", 0 TSRMLS_CC);
+        zend_throw_exception(amqp_connection_exception_class_entry, "Error while try send heartbeat: not connected", 0);
     }
 
     RETURN_TRUE;
@@ -1612,11 +1612,11 @@ static PHP_METHOD(amqp_connection_class, setCAPath)
 {
 	char *str = NULL;	PHP5to7_param_str_len_type_t str_len = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &str, &str_len) == FAILURE) {
 		return;
 	}
 
-	zend_update_property_stringl(this_ce, PHP5to8_OBJ_PROP(getThis()), ZEND_STRL("capath"), str, str_len TSRMLS_CC);
+	zend_update_property_stringl(this_ce, PHP_AMQP_COMPAT_OBJ_P(getThis()), ZEND_STRL("capath"), str, str_len);
 
 	RETURN_TRUE;
 }
@@ -1637,11 +1637,11 @@ static PHP_METHOD(amqp_connection_class, setUseDefaultCACert)
 {
 	zend_bool use_default_cacert = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &use_default_cacert) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "b", &use_default_cacert) == FAILURE) {
 		return;
 	}
 
-	zend_update_property_bool(this_ce, PHP5to8_OBJ_PROP(getThis()), ZEND_STRL("use_default_cacert"), use_default_cacert TSRMLS_CC);
+	zend_update_property_bool(this_ce, PHP_AMQP_COMPAT_OBJ_P(getThis()), ZEND_STRL("use_default_cacert"), use_default_cacert);
 
 	RETURN_TRUE;
 }
@@ -1662,11 +1662,11 @@ static PHP_METHOD(amqp_connection_class, setUseDefaultCAPath)
 {
 	zend_bool use_default_capath = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &use_default_capath) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "b", &use_default_capath) == FAILURE) {
 		return;
 	}
 
-	zend_update_property_bool(this_ce, PHP5to8_OBJ_PROP(getThis()), ZEND_STRL("use_default_capath"), use_default_capath TSRMLS_CC);
+	zend_update_property_bool(this_ce, PHP_AMQP_COMPAT_OBJ_P(getThis()), ZEND_STRL("use_default_capath"), use_default_capath);
 
 	RETURN_TRUE;
 }
