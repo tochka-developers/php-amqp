@@ -1,6 +1,6 @@
 {
-  "name": "pdezwart/php-amqp",
-  "type": "library",
+  "name": "php-amqp/php-amqp",
+  "type": "php-ext",
   "description": "PHP AMQP Binding Library",
   "keywords": [
     "rabbitmq",
@@ -8,18 +8,42 @@
     "message",
     "queue"
   ],
-  "homepage": "https://github.com/pdezwart/php-amqp",
+  "homepage": "https://github.com/php-amqp/php-amqp",
   "license": "PHP-3.01",
   "authors": [
     {
-      "name": "Pieter de Zwart",
-      "email": "pdezwart@php.net",
+      "name": "Lars Strojny",
+      "email": "lstrojny@php.net",
       "role": "lead"
     }
   ],
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "ext-json": "*",
     "ext-dom": "*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "symplify/easy-coding-standard": "*",
+    "slevomat/coding-standard": "^8.13"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": false
+    }
+  },
+  "php-ext": {
+    "extension-name": "amqp",
+    "configure-options": [
+      {
+        "name": "with-amqp",
+        "description": "Include amqp support"
+      },
+      {
+        "name": "with-librabbitmq-dir",
+        "description": "Set the path to librabbitmq install prefix.",
+        "needs-value": true
+      }
+    ]
   }
 }

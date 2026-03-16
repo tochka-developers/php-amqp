@@ -5,30 +5,40 @@
  */
 class AMQPChannel
 {
-    /**
-     * Commit a pending transaction.
-     *
-     * @throws AMQPChannelException    If no transaction was started prior to
-     *                                 calling this method.
-     * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
-     */
-    public function commitTransaction()
-    {
-    }
+    private AMQPConnection $connection;
+
+    private ?int $prefetchCount = null;
+
+    private ?int $prefetchSize;
+
+    private ?int $globalPrefetchCount;
+
+    private ?int $globalPrefetchSize;
+
+    private array $consumers = [];
 
     /**
      * Create an instance of an AMQPChannel object.
      *
-     * @param AMQPConnection $amqp_connection An instance of AMQPConnection
-     *                                        with an active connection to a
-     *                                        broker.
+     * @param AMQPConnection $connection An instance of AMQPConnection
+     *                                   with an active connection to a
+     *                                   broker.
      *
-     * @throws AMQPConnectionException        If the connection to the broker
-     *                                        was lost.
+     * @throws AMQPConnectionException If the connection to the broker
+     *                                 was lost.
      */
-    public function __construct(AMQPConnection $amqp_connection)
+    public function __construct(AMQPConnection $connection)
+    {
+    }
+
+    /**
+     * Commit a pending transaction.
+     *
+     * @throws AMQPChannelException If no transaction was started prior to
+     *                              calling this method.
+     * @throws AMQPConnectionException If the connection to the broker was lost.
+     */
+    public function commitTransaction(): void
     {
     }
 
@@ -37,14 +47,14 @@ class AMQPChannel
      *
      * @return bool Indicates whether the channel is connected.
      */
-    public function isConnected()
+    public function isConnected(): bool
     {
     }
 
     /**
      * Closes the channel.
      */
-    public function close()
+    public function close(): void
     {
     }
 
@@ -53,7 +63,7 @@ class AMQPChannel
      *
      * @return integer
      */
-    public function getChannelId()
+    public function getChannelId(): int
     {
     }
 
@@ -72,15 +82,13 @@ class AMQPChannel
      * flag set, the client will not do any prefetching of data, regardless of
      * the QOS settings.
      *
-     * @param integer $size   The window size, in octets, to prefetch.
-     * @param integer $count  The number of messages to prefetch.
-     * @param bool    $global TRUE for global, FALSE for consumer. FALSE by default.
+     * @param integer $size The window size, in octets, to prefetch.
+     * @param integer $count The number of messages to prefetch.
+     * @param bool $global TRUE for global, FALSE for consumer. FALSE by default.
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
      */
-    public function qos($size, $count, $global)
+    public function qos(int $size, int $count, bool $global = false): void
     {
     }
 
@@ -90,13 +98,11 @@ class AMQPChannel
      * Rollback an existing transaction. AMQPChannel::startTransaction() must
      * be called prior to this.
      *
-     * @throws AMQPChannelException    If no transaction was started prior to
-     *                                 calling this method.
+     * @throws AMQPChannelException If no transaction was started prior to
+     *                              calling this method.
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
      */
-    public function rollbackTransaction()
+    public function rollbackTransaction(): void
     {
     }
 
@@ -109,10 +115,8 @@ class AMQPChannel
      * @param integer $count The number of messages to prefetch.
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setPrefetchCount($count)
+    public function setPrefetchCount(int $count): void
     {
     }
 
@@ -121,7 +125,7 @@ class AMQPChannel
      *
      * @return integer
      */
-    public function getPrefetchCount()
+    public function getPrefetchCount(): int
     {
     }
 
@@ -138,10 +142,8 @@ class AMQPChannel
      * @param integer $size The window size, in octets, to prefetch.
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
      */
-    public function setPrefetchSize($size)
+    public function setPrefetchSize(int $size): void
     {
     }
 
@@ -150,7 +152,7 @@ class AMQPChannel
      *
      * @return integer
      */
-    public function getPrefetchSize()
+    public function getPrefetchSize(): int
     {
     }
 
@@ -163,10 +165,8 @@ class AMQPChannel
      * @param integer $count The number of messages to prefetch.
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return boolean TRUE on success or FALSE on failure.
      */
-    public function setGlobalPrefetchCount($count)
+    public function setGlobalPrefetchCount(int $count): void
     {
     }
 
@@ -175,7 +175,7 @@ class AMQPChannel
      *
      * @return integer
      */
-    public function getGlobalPrefetchCount()
+    public function getGlobalPrefetchCount(): int
     {
     }
 
@@ -192,10 +192,8 @@ class AMQPChannel
      * @param integer $size The window size, in octets, to prefetch.
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
      */
-    public function setGlobalPrefetchSize($size)
+    public function setGlobalPrefetchSize(int $size): void
     {
     }
 
@@ -204,7 +202,7 @@ class AMQPChannel
      *
      * @return integer
      */
-    public function getGlobalPrefetchSize()
+    public function getGlobalPrefetchSize(): int
     {
     }
 
@@ -215,56 +213,46 @@ class AMQPChannel
      * AMQPChannel::commitTransaction() or AMQPChannel::rollbackTransaction().
      *
      * @throws AMQPConnectionException If the connection to the broker was lost.
-     *
-     * @return bool TRUE on success or FALSE on failure.
      */
-    public function startTransaction()
+    public function startTransaction(): void
     {
     }
 
     /**
      * Get the AMQPConnection object in use
-     *
-     * @return AMQPConnection
      */
-    public function getConnection()
+    public function getConnection(): AMQPConnection
     {
     }
 
     /**
      * Redeliver unacknowledged messages.
-     *
-     * @param bool $requeue
      */
-    public function basicRecover($requeue = true)
+    public function basicRecover(bool $requeue = true): void
     {
     }
 
     /**
      * Set the channel to use publisher acknowledgements. This can only used on a non-transactional channel.
      */
-    public function confirmSelect()
+    public function confirmSelect(): void
     {
     }
 
     /**
      * Set callback to process basic.ack and basic.nac AMQP server methods (applicable when channel in confirm mode).
      *
-     * @param callable|null $ack_callback
-     * @param callable|null $nack_callback
-     *
      * Callback functions with all arguments have the following signature:
      *
      *      function ack_callback(int $delivery_tag, bool $multiple) : bool;
      *      function nack_callback(int $delivery_tag, bool $multiple, bool $requeue) : bool;
      *
-     * and should return boolean false when wait loop should be canceled.
+     * and should return boolean FALSE when wait loop should be canceled.
      *
      * Note, basic.nack server method will only be delivered if an internal error occurs in the Erlang process
      * responsible for a queue (see https://www.rabbitmq.com/confirms.html for details).
-     *
      */
-    public function setConfirmCallback(callable $ack_callback=null, callable $nack_callback=null)
+    public function setConfirmCallback(?callable $ackCallback, callable $nackCallback = null): void
     {
     }
 
@@ -277,14 +265,12 @@ class AMQPChannel
      *
      * @throws AMQPQueueException If timeout occurs.
      */
-    public function waitForConfirm($timeout = 0.0)
+    public function waitForConfirm(float $timeout = 0.0): void
     {
     }
 
     /**
      * Set callback to process basic.return AMQP server method
-     *
-     * @param callable|null $return_callback
      *
      * Callback function with all arguments has the following signature:
      *
@@ -295,10 +281,9 @@ class AMQPChannel
      *                        AMQPBasicProperties $properties,
      *                        string $body) : bool;
      *
-     * and should return boolean false when wait loop should be canceled.
-     *
+     * and should return boolean FALSE when wait loop should be canceled.
      */
-    public function setReturnCallback(callable $return_callback=null)
+    public function setReturnCallback(?callable $returnCallback): void
     {
     }
 
@@ -309,7 +294,7 @@ class AMQPChannel
      *
      * @throws AMQPQueueException If timeout occurs.
      */
-    public function waitForBasicReturn($timeout = 0.0)
+    public function waitForBasicReturn(float $timeout = 0.0): void
     {
     }
 
@@ -318,7 +303,7 @@ class AMQPChannel
      *
      * @return AMQPQueue[]
      */
-    public function getConsumers()
+    public function getConsumers(): array
     {
     }
 }

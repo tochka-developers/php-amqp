@@ -1,23 +1,25 @@
 --TEST--
 AMQPExchange publish with timestamp header
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) {
-    print "skip";
-} ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
 $q = new AMQPQueue($ch);
-$q->setName('queue-' . microtime(true));
+$q->setName('queue-' . bin2hex(random_bytes(32)));
 $q->declareQueue();
 $q->bind($ex->getName());
 
@@ -38,14 +40,14 @@ array(1) {
   ["headerName"]=>
   object(AMQPTimestamp)#%d (1) {
     ["timestamp":"AMQPTimestamp":private]=>
-    string(10) "1488578462"
+    float(1488578462)
   }
 }
 array(1) {
   ["headerName"]=>
   object(AMQPTimestamp)#%d (1) {
     ["timestamp":"AMQPTimestamp":private]=>
-    string(10) "1488578462"
+    float(1488578462)
   }
 }
 same

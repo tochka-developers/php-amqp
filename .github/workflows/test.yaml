@@ -1,177 +1,183 @@
 name: Test
 
 on:
-    push:
-    pull_request:
-        types: [opened, synchronize, edited, reopened]
+  push:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 env:
-    ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-    TEST_TIMEOUT: 120
+  TEST_TIMEOUT: 120
+  CFLAGS: -g -O0 -fstack-protector-strong -Wall -Werror -D_GNU_SOURCE
+  MAKEFLAGS: -j4 PHP_EXECUTABLE=./infra/tools/pamqp-php-cli-deterministic
 
 jobs:
-    test:
-        name: php-${{ matrix.php-version }} librabbitmq-${{ matrix.librabbitmq-version }} ${{ matrix.test-php-args == '-m' && 'memory leaks' || '' }}
+  prep:
+    name: Prepare
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+      php_versions: ${{ steps.matrix.outputs.php_versions }}
+      librabbitmq_versions: ${{ steps.matrix.outputs.librabbitmq_versions }}
+      memory_build_matrix: ${{ steps.matrix.outputs.memory_build_matrix }}
+    steps:
+      - id: skip_check
+        name: Prevent duplicate builds
+        uses: fkirc/skip-duplicate-actions@v5.3.1
+        with:
+          skip_after_successful_duplicate: 'true'
+          cancel_others: 'true'
+          concurrent_skipping: 'same_content_newer'
 
-        runs-on: ubuntu-latest
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
 
-        continue-on-error: ${{ matrix.experimental }}
+      - name: Prepare matrix
+        id: matrix
+        run: |
+          infra/tools/pamqp-matrix >> "$GITHUB_OUTPUT"
 
+  checkstyle:
+    name: Check C formatting
+    runs-on: ubuntu-24.04
+    needs: prep
+    if: needs.prep.outputs.should_skip != 'true'
+
+    steps:
+      - name: Install clang-format
+        uses: myci-actions/add-deb-repo@11
+        with:
+          repo: 'deb https://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main'
+          repo-name: llvm
+          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+          install: clang-format-20
+
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Check style
+        run: ./infra/tools/pamqp-format-check
+
+  stubs:
+    name: Check stubs php-${{ matrix.php-version }}
+    runs-on: ubuntu-24.04
+    needs: prep
+    if: needs.prep.outputs.should_skip != 'true'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ${{ fromJson(needs.prep.outputs.php_versions) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Install packages
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.0
+        with:
+          packages: cmake
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.36.0
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: json
+          coverage: none
         env:
-            TEST_PHP_ARGS: ${{ matrix.test-php-args }}
+          debug: true
 
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                    - php-version: '8.1'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '8.1'
-                      librabbitmq-version: 'master'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '8.1'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '8.1'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+      - name: Check stubs
+        run: ./infra/tools/pamqp-stubs-lint
 
-                    - php-version: '8.0'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '8.0'
-                      librabbitmq-version: 'master'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '8.0'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '8.0'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+      - name: Build librabbitmq
+        run: ./infra/tools/pamqp-install-librabbitmq master
 
-                    - php-version: '7.4'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '7.4'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '7.4'
-                      librabbitmq-version: 'v0.11.0'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '7.4'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+      - name: Build PHP extension
+        run: phpize && ./configure && make
 
-                    - php-version: '7.3'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '7.3'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '7.3'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
-                    - php-version: '7.3'
-                      librabbitmq-version: 'v0.9.0'
-                      test-php-args: '-m'
-                      experimental: true
+      - name: Validate stubs
+        run: ./infra/tools/pamqp-stubs-validate
 
-                    - php-version: '7.2'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '7.2'
-                      librabbitmq-version: 'master'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '7.2'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '7.2'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+      - name: Check stub coding style
+        run: ./infra/tools/pamqp-stubs-format-check
 
-                    - php-version: '7.1'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '7.1'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '7.1'
-                      librabbitmq-version: 'v0.11.0'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '7.1'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+      - name: Validate argument parsing
+        run: ./infra/tools/pamqp-php-cli-deterministic -d extension=modules/amqp.so ./infra/tools/pamqp-arguments-validate
 
-                    - php-version: '7.0'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '7.0'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '7.0'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
-                    - php-version: '7.0'
-                      librabbitmq-version: 'v0.9.0'
-                      test-php-args: '-m'
-                      experimental: true
+  test:
+    name: ${{ matrix.test-php-args == '-m' && 'Memtest' || 'Test' }} php-${{ matrix.php-version }}${{ matrix.php-thread-safe && '-ts' || '-nts' }} librabbitmq-${{ matrix.librabbitmq-version }} ${{ matrix.compiler }}
+    runs-on: ubuntu-24.04
+    needs: prep
+    if: needs.prep.outputs.should_skip != 'true'
 
-                    - php-version: '5.6'
-                      librabbitmq-version: 'master'
-                      experimental: false
-                    - php-version: '5.6'
-                      librabbitmq-version: 'master'
-                      test-php-args: '-m'
-                      experimental: true
-                    - php-version: '5.6'
-                      librabbitmq-version: 'v0.11.0'
-                      experimental: false
-                    - php-version: '5.6'
-                      librabbitmq-version: 'v0.9.0'
-                      experimental: false
+    env:
+      CC: ${{ matrix.compiler }}
+      TEST_PHP_ARGS: -j4 ${{ matrix.test-php-args }}
+      PHP_AMQP_HOST: localhost
+      PHP_AMQP_SSL_HOST: rabbitmq.example.org
+      VALGRIND_OPTS: '--suppressions=infra/tools/valgrind-suppressions'
 
-        services:
-            rabbitmq:
-                image: rabbitmq:3
-                ports:
-                    - 5671:5671
-                    - 5672:5672
-                    - 15671:15671
-                    - 15672:15672
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ${{ fromJson(needs.prep.outputs.php_versions) }}
+        php-thread-safe: [ true, false ]
+        librabbitmq-version: ${{ fromJson(needs.prep.outputs.librabbitmq_versions) }}
+        compiler: [gcc, clang]
+        include: ${{ fromJson(needs.prep.outputs.memory_build_matrix) }}
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
 
-            - name: Install packages
-              run: sudo apt-get install -y cmake valgrind
+      - name: Configure hostnames
+        run: sudo echo "127.0.0.1 ${{ env.PHP_AMQP_SSL_HOST }}" | sudo tee -a /etc/hosts
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: ${{ matrix.php-version }}
-                  coverage: none
+      - name: Generate test certificates
+        run: docker compose up ca
 
-            - name: Build librabbitmq
-              run: sudo ./provision/install_rabbitmq-c.sh ${{ matrix.librabbitmq-version }}
+      - name: Start RabbitMQ
+        run: docker compose up -d rabbitmq
 
-            - name: Debug librabbitmq
-              run: pkg-config librabbitmq --debug
+      - name: Install packages
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.0
+        with:
+          packages: cmake valgrind libc6-dbg gcc clang
+          version: ubuntu-24.04
 
-            - name: Build PHP extension
-              run: phpize && ./configure && make
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.36.0
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          extensions: simplexml
+        env:
+          phpts: ${{ matrix.php-thread-safe && 'ts' || 'nts' }}
+          debug: true
 
-            - name: Test PHP extension
-              run: make test | tee result.txt
+      - name: Build librabbitmq
+        run: ./infra/tools/pamqp-install-librabbitmq ${{ matrix.librabbitmq-version }}
 
-            - name: Benchmark PHP extension
-              run: php -n -c './tmp-php.ini' -d "extension_dir=./modules/" -d "extension=amqp.so" benchmark.php
+      - name: Print librabbitmq version
+        run: pkg-config librabbitmq --debug
 
-            - name: Dump report
-              run: sh test-report.sh
+      - name: Build PHP extension
+        run: phpize && ./configure && make
+
+      - name: Run minimal test suite
+        run: make test | tee result-minimal.txt
+        env:
+          # Reset defaults to a) only run local tests, b) don’t run memory checks as the full test suite run will do so
+          TEST_PHP_ARGS: '-j4 -q'
+          PHP_AMQP_HOST: ''
+          PHP_AMQP_SSL_HOST: ''
+
+      - name: Test full test suite
+        run: make test | tee result-full.txt
+
+      - name: Benchmark PHP extension
+        run: ./infra/tools/pamqp-php-cli-deterministic -d extension=modules/amqp.so benchmark.php
+
+      - name: Dump report
+        run: ./infra/tools/pamqp-test-report

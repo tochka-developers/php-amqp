@@ -2,17 +2,17 @@
 AMQPExchange
 --SKIPIF--
 <?php
-if (!extension_loaded("amqp")) print "skip";
-if (getenv("SKIP_SLOW_TESTS")) print "skip slow test"   ;
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (getenv("SKIP_SLOW_TESTS")) print "skip slow test and SKIP_SLOW_TESTS is set";
 ?>
 --FILE--
 <?php
 
 $timeout = .68;
-$conn = new AMQPConnection(array('write_timeout' => $timeout));
-$conn->connect();
+$cnn = new AMQPConnection(array('write_timeout' => $timeout));
+$cnn->connect();
 
-$chan = new AMQPChannel($conn);
+$chan = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($chan);
 $ex->setName("exchange-pub-timeout-" . time());

@@ -1,16 +1,20 @@
 --TEST--
 AMQPExchange publish with properties - user_id failure
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
@@ -19,7 +23,7 @@ echo "Connection ", $cnn->isConnected() ? 'connected' : 'disconnected', PHP_EOL;
 
 try {
     // NOTE: basic.publish is asynchronous, so ...
-    echo $ex->publish('message', 'routing.key', AMQP_NOPARAM, array('user_id' => 'unknown-' . microtime(true))) ? 'true' : 'false', PHP_EOL;
+    var_dump($ex->publish('message', 'routing.key', AMQP_NOPARAM, array('user_id' => 'unknown-' . bin2hex(random_bytes(32)))));
 } catch (AMQPException $e) {
     echo get_class($e), "({$e->getCode()}): ", $e->getMessage(), PHP_EOL;
 }
@@ -46,9 +50,9 @@ echo "Connection ", $cnn->isConnected() ? 'connected' : 'disconnected', PHP_EOL;
 --EXPECTF--
 Channel connected
 Connection connected
-true
+NULL
 Channel connected
 Connection connected
-AMQPQueueException(406): Server channel error: 406, message: PRECONDITION_FAILED - user_id property set to 'unknown-%f' but authenticated user was 'guest'
+AMQPQueueException(406): Server channel error: 406, message: PRECONDITION_FAILED - user_id property set to 'unknown-%s' but authenticated user was 'guest'
 Channel disconnected
 Connection connected

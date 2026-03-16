@@ -1,15 +1,17 @@
 --TEST--
 #155 RabbitMQ's Direct reply-to (related to consume multiple)
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) {
-    print "skip";
-} ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
-$conn = new AMQPConnection();
-$conn->connect();
+$cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
+$cnn->connect();
 
-$channel  = new AMQPChannel($conn);
+$channel  = new AMQPChannel($cnn);
 $exchange = new AMQPExchange($channel);
 
 
@@ -39,7 +41,7 @@ echo 'Reply-to queue: ', $reply_to, PHP_EOL;
 
 echo 'Prepare response queue...' . PHP_EOL;
 
-$channel_2 = new AMQPChannel($conn);
+$channel_2 = new AMQPChannel($cnn);
 
 $q_reply = new AMQPQueue($channel_2);
 $q_reply->setName($reply_to);
@@ -48,7 +50,7 @@ $q_reply->declareQueue();
 
 echo 'Publishing response...' . PHP_EOL;
 
-$exchange->publish('response', $reply_to, AMQP_NOPARAM);
+$exchange->publish('response', $reply_to);
 
 
 echo 'Waiting for reply...' . PHP_EOL;

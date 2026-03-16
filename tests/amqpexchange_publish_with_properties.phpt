@@ -1,18 +1,22 @@
 --TEST--
 AMQPExchange publish with properties
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 require '_test_helpers.php.inc';
 
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
@@ -53,7 +57,7 @@ $attrs_control = array(
     //'headers'          => 'not array', // should be array // NOTE: covered in tests/amqpexchange_publish_with_properties_ignore_num_header.phpt
 );
 
-echo $ex->publish('message', 'routing.key', AMQP_NOPARAM, $attrs) ? 'true' : 'false', PHP_EOL;
+var_dump($ex->publish('message', 'routing.key', AMQP_NOPARAM, $attrs));
 
 
 //var_dump($attrs, $attrs_control);
@@ -70,7 +74,7 @@ $q->delete();
 
 ?>
 --EXPECTF--
-true
+NULL
 Message attributes are the same
 AMQPEnvelope
     getBody:
@@ -86,7 +90,7 @@ AMQPEnvelope
     getDeliveryMode:
         int(1)
     getExchangeName:
-        string(%d) "exchange-%f"
+        string(%d) "exchange-%s"
     isRedelivery:
         bool(false)
     getContentEncoding:
@@ -100,7 +104,7 @@ AMQPEnvelope
     getExpiration:
         string(9) "100000000"
     getUserId:
-        string(0) ""
+        NULL
     getAppId:
         string(1) "5"
     getMessageId:

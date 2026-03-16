@@ -1,7 +1,11 @@
 --TEST--
 AMQPExchange::publish() - publish in conform mode and handle conforms with AMQPQueue::consume() method
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+elseif (getenv("SKIP_SLOW_TESTS")) print "skip slow test and SKIP_SLOW_TESTS is set";
+?>
 --FILE--
 <?php
 
@@ -14,6 +18,7 @@ set_error_handler('exception_error_handler');
 
 
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->setReadTimeout(2);
 
 $cnn->connect();
@@ -21,16 +26,16 @@ $ch = new AMQPChannel($cnn);
 $ch->confirmSelect();
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->setFlags(AMQP_AUTODELETE);
 $ex->declareExchange();
 
-echo $ex->publish('message 1', 'routing.key', AMQP_MANDATORY) ? 'true' : 'false', PHP_EOL;
+var_dump($ex->publish('message 1', 'routing.key', AMQP_MANDATORY));
 
 // Create a new queue
 $q = new AMQPQueue($ch);
-$q->setName('queue-' . microtime(true));
+$q->setName('queue-' . bin2hex(random_bytes(32)));
 $q->setFlags(AMQP_AUTODELETE);
 $q->declareQueue();
 
@@ -47,7 +52,7 @@ try {
     echo get_class($e), "({$e->getCode()}): ", $e->getMessage(). PHP_EOL;
 }
 
-echo $ex->publish('message 2', 'routing.key', AMQP_MANDATORY) ? 'true' : 'false', PHP_EOL;
+var_dump($ex->publish('message 2', 'routing.key', AMQP_MANDATORY));
 
 /* callback(int $reply_code, string $reply_text, string $exchange, string $routing_key, AMQPBasicProperties $properties, string $body); */
 $ch->setReturnCallback(function ($reply_code, $reply_text, $exchange, $routing_key, AMQPBasicProperties $properties, $body) {
@@ -79,13 +84,13 @@ try {
 $q->delete();
 $ex->delete();
 ?>
---EXPECTF--
-true
-bool(false)
+--EXPECT--
+NULL
+NULL
 Unhandled basic.return method from server received. Use AMQPChannel::setReturnCallback() to process it.
 Unhandled basic.ack method from server received. Use AMQPChannel::setConfirmCallback() to process it.
 AMQPQueueException(0): Consumer timeout exceed
-true
+NULL
 Message returned: NO_ROUTE, message body:message 2
 Message acked
 array(2) {

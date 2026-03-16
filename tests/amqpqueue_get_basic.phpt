@@ -1,25 +1,29 @@
 --TEST--
 AMQPQueue::get basic
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 require '_test_helpers.php.inc';
 
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 // Declare a new exchange
 $ex = new AMQPExchange($ch);
-$ex->setName('exchange-'. microtime(true));
+$ex->setName('exchange-'. bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
 // Create a new queue
 $q = new AMQPQueue($ch);
-$q->setName('queue-' . microtime(true));
+$q->setName('queue-' . bin2hex(random_bytes(32)));
 $q->declareQueue();
 
 // Bind it on the exchange to routing.key
@@ -54,29 +58,29 @@ AMQPEnvelope
     getDeliveryMode:
         int(1)
     getExchangeName:
-        string(%d) "exchange-%f"
+        string(%d) "exchange-%s"
     isRedelivery:
         bool(false)
     getContentEncoding:
-        string(0) ""
+        NULL
     getType:
-        string(0) ""
+        NULL
     getTimeStamp:
         int(0)
     getPriority:
         int(0)
     getExpiration:
-        string(0) ""
+        NULL
     getUserId:
-        string(0) ""
+        NULL
     getAppId:
-        string(0) ""
+        NULL
     getMessageId:
-        string(0) ""
+        NULL
     getReplyTo:
-        string(0) ""
+        NULL
     getCorrelationId:
-        string(0) ""
+        NULL
     getHeaders:
         array(1) {
   ["foo"]=>
@@ -98,29 +102,29 @@ AMQPEnvelope
     getDeliveryMode:
         int(1)
     getExchangeName:
-        string(%d) "exchange-%f"
+        string(%d) "exchange-%s"
     isRedelivery:
         bool(false)
     getContentEncoding:
-        string(0) ""
+        NULL
     getType:
-        string(0) ""
+        NULL
     getTimeStamp:
         int(0)
     getPriority:
         int(0)
     getExpiration:
-        string(0) ""
+        NULL
     getUserId:
-        string(0) ""
+        NULL
     getAppId:
-        string(0) ""
+        NULL
     getMessageId:
-        string(0) ""
+        NULL
     getReplyTo:
-        string(0) ""
+        NULL
     getCorrelationId:
-        string(0) ""
+        NULL
     getHeaders:
         array(0) {
 }
@@ -140,32 +144,32 @@ AMQPEnvelope
     getDeliveryMode:
         int(1)
     getExchangeName:
-        string(%d) "exchange-%f"
+        string(%d) "exchange-%s"
     isRedelivery:
         bool(false)
     getContentEncoding:
-        string(0) ""
+        NULL
     getType:
-        string(0) ""
+        NULL
     getTimeStamp:
         int(0)
     getPriority:
         int(0)
     getExpiration:
-        string(0) ""
+        NULL
     getUserId:
-        string(0) ""
+        NULL
     getAppId:
-        string(0) ""
+        NULL
     getMessageId:
-        string(0) ""
+        NULL
     getReplyTo:
-        string(0) ""
+        NULL
     getCorrelationId:
-        string(0) ""
+        NULL
     getHeaders:
         array(0) {
 }
 
 call #3
-bool(false)
+NULL

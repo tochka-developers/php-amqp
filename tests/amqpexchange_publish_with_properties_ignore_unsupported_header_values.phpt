@@ -1,16 +1,20 @@
 --TEST--
 AMQPExchange publish with properties - ignore unsupported header values (NULL, object, resources)
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 $ex = new AMQPExchange($ch);
-$ex->setName("exchange-" . microtime(true));
+$ex->setName("exchange-" . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 
@@ -22,7 +26,7 @@ $attrs = array(
     ),
 );
 
-echo $ex->publish('message', 'routing.key', AMQP_NOPARAM, $attrs) ? 'true' : 'false';
+var_dump($ex->publish('message', 'routing.key', AMQP_NOPARAM, $attrs));
 
 $ex->delete();
 
@@ -32,4 +36,4 @@ $ex->delete();
 Warning: AMQPExchange::publish(): Ignoring field 'object' due to unsupported value type (object) in %s on line %d
 
 Warning: AMQPExchange::publish(): Ignoring field 'resource' due to unsupported value type (resource) in %s on line %d
-true
+NULL

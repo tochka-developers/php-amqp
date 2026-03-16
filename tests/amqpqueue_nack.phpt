@@ -1,25 +1,29 @@
 --TEST--
 AMQPQueue::nack
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+elseif (!getenv("PHP_AMQP_HOST")) print "skip PHP_AMQP_HOST environment variable is not set";
+?>
 --FILE--
 <?php
 ini_set('amqp.auto_ack', false);
 $cnn = new AMQPConnection();
+$cnn->setHost(getenv('PHP_AMQP_HOST'));
 $cnn->connect();
 
 $ch = new AMQPChannel($cnn);
 
 // Declare a new exchange
 $ex = new AMQPExchange($ch);
-$ex->setName('testnack' . microtime(true));
+$ex->setName('testnack' . bin2hex(random_bytes(32)));
 $ex->setType(AMQP_EX_TYPE_FANOUT);
 $ex->declareExchange();
 $exchangeName = $ex->getName();
 
 // Create a new queue
 $q = new AMQPQueue($ch);
-$q->setName('testnack' . microtime(true));
+$q->setName('testnack' . bin2hex(random_bytes(32)));
 $q->declareQueue();
 $q->bind($exchangeName, '#');
 
@@ -38,7 +42,7 @@ $q->nack($env->getDeliveryTag(), AMQP_REQUEUE);
 // read again
 $env2  = $q->get(AMQP_NOPARAM);
 if (false !== $env2) {
-    $q->ack($env2->getDeliveryTag());
+    $q->ack($env2->getDeliveryTag(), null);
     echo $env2->getBody() . PHP_EOL;
     echo $env2->isRedelivery() ? 'true' : 'false';
     echo PHP_EOL;

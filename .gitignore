@@ -1,4 +1,5 @@
 .deps
+*.dep
 .libs/*
 .vagrant
 Makefile
@@ -28,7 +29,7 @@ ltmain.sh
 missing
 mkinstalldirs
 modules/*
-run-tests.php
+infra/tools/run-tests.php
 tests/*
 !tests/*.phpt
 !tests/_test_helpers.php.inc
@@ -43,4 +44,10 @@ CMakeLists.txt
 # CLion
 .idea/
 /vendor/
-/composer.lock
+
+/config.h.in~
+/configure~
+/impl.json
+/stubs.json
+/run-tests.php
+/stubs-old

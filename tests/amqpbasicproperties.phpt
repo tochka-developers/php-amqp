@@ -1,7 +1,9 @@
 --TEST--
 AMQPBasicProperties
 --SKIPIF--
-<?php if (!extension_loaded("amqp")) print "skip"; ?>
+<?php
+if (!extension_loaded("amqp")) print "skip AMQP extension is not loaded";
+?>
 --FILE--
 <?php
 require '_test_helpers.php.inc';
@@ -35,41 +37,41 @@ dump_methods($props);
 ?>
 --EXPECT--
 object(AMQPBasicProperties)#1 (14) {
-  ["content_type":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["content_encoding":"AMQPBasicProperties":private]=>
-  string(0) ""
+  ["contentType":"AMQPBasicProperties":private]=>
+  NULL
+  ["contentEncoding":"AMQPBasicProperties":private]=>
+  NULL
   ["headers":"AMQPBasicProperties":private]=>
   array(0) {
   }
-  ["delivery_mode":"AMQPBasicProperties":private]=>
+  ["deliveryMode":"AMQPBasicProperties":private]=>
   int(1)
   ["priority":"AMQPBasicProperties":private]=>
   int(0)
-  ["correlation_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["reply_to":"AMQPBasicProperties":private]=>
-  string(0) ""
+  ["correlationId":"AMQPBasicProperties":private]=>
+  NULL
+  ["replyTo":"AMQPBasicProperties":private]=>
+  NULL
   ["expiration":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["message_id":"AMQPBasicProperties":private]=>
-  string(0) ""
+  NULL
+  ["messageId":"AMQPBasicProperties":private]=>
+  NULL
   ["timestamp":"AMQPBasicProperties":private]=>
-  int(0)
+  NULL
   ["type":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["user_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["app_id":"AMQPBasicProperties":private]=>
-  string(0) ""
-  ["cluster_id":"AMQPBasicProperties":private]=>
-  string(0) ""
+  NULL
+  ["userId":"AMQPBasicProperties":private]=>
+  NULL
+  ["appId":"AMQPBasicProperties":private]=>
+  NULL
+  ["clusterId":"AMQPBasicProperties":private]=>
+  NULL
 }
 AMQPBasicProperties
     getContentType():
-        string(0) ""
+        NULL
     getContentEncoding():
-        string(0) ""
+        NULL
     getHeaders():
         array(0) {
 }
@@ -78,55 +80,55 @@ AMQPBasicProperties
     getPriority():
         int(0)
     getCorrelationId():
-        string(0) ""
+        NULL
     getReplyTo():
-        string(0) ""
+        NULL
     getExpiration():
-        string(0) ""
+        NULL
     getMessageId():
-        string(0) ""
+        NULL
     getTimestamp():
-        int(0)
+        NULL
     getType():
-        string(0) ""
+        NULL
     getUserId():
-        string(0) ""
+        NULL
     getAppId():
-        string(0) ""
+        NULL
     getClusterId():
-        string(0) ""
+        NULL
 
 object(AMQPBasicProperties)#2 (14) {
-  ["content_type":"AMQPBasicProperties":private]=>
+  ["contentType":"AMQPBasicProperties":private]=>
   string(12) "content_type"
-  ["content_encoding":"AMQPBasicProperties":private]=>
+  ["contentEncoding":"AMQPBasicProperties":private]=>
   string(16) "content_encoding"
   ["headers":"AMQPBasicProperties":private]=>
   array(1) {
     ["test"]=>
     string(7) "headers"
   }
-  ["delivery_mode":"AMQPBasicProperties":private]=>
+  ["deliveryMode":"AMQPBasicProperties":private]=>
   int(42)
   ["priority":"AMQPBasicProperties":private]=>
   int(24)
-  ["correlation_id":"AMQPBasicProperties":private]=>
+  ["correlationId":"AMQPBasicProperties":private]=>
   string(14) "correlation_id"
-  ["reply_to":"AMQPBasicProperties":private]=>
+  ["replyTo":"AMQPBasicProperties":private]=>
   string(8) "reply_to"
   ["expiration":"AMQPBasicProperties":private]=>
   string(10) "expiration"
-  ["message_id":"AMQPBasicProperties":private]=>
+  ["messageId":"AMQPBasicProperties":private]=>
   string(10) "message_id"
   ["timestamp":"AMQPBasicProperties":private]=>
   int(99999)
   ["type":"AMQPBasicProperties":private]=>
   string(4) "type"
-  ["user_id":"AMQPBasicProperties":private]=>
+  ["userId":"AMQPBasicProperties":private]=>
   string(7) "user_id"
-  ["app_id":"AMQPBasicProperties":private]=>
+  ["appId":"AMQPBasicProperties":private]=>
   string(6) "app_id"
-  ["cluster_id":"AMQPBasicProperties":private]=>
+  ["clusterId":"AMQPBasicProperties":private]=>
   string(10) "cluster_id"
 }
 AMQPBasicProperties
